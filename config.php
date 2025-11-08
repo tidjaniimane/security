@@ -1,8 +1,8 @@
 <?php
-$host = getenv("localhost");
-$user = getenv("root");
-$pass = getenv("");
-$dbname = getenv("security");
+$host   = getenv('DB_HOST');
+$user   = getenv('DB_USER');
+$pass   = getenv('DB_PASS');
+$dbname = getenv('DB_NAME');
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
@@ -10,4 +10,3 @@ try {
 } catch(PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
-?>
