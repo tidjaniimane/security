@@ -4,7 +4,7 @@ session_start();
 // -----------------------
 // ✅ 1. MongoDB CONFIG
 // -----------------------
-require 'vendor/autoload.php'; // MongoDB PHP library
+require __DIR__ . '/vendor/autoload.php'; // MongoDB PHP library
 
 $mongoURI = "mongodb+srv://imanetidjani:yghcbv@cluster0.apc6t.mongodb.net/security?retryWrites=true&w=majority&appName=Cluster0"; 
 // Example:
