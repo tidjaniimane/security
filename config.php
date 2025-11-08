@@ -1,14 +1,12 @@
 <?php
-$host = getenv('DB_HOST');
-$db   = getenv('DB_NAME');
-$user = getenv('DB_USER');
-$pass = getenv('DB_PASS');
-$port = getenv('DB_PORT');
+$host = "localhost";
+$user = "root";     // your WAMP/MAMP username
+$pass = "";         // your WAMP/MAMP password (empty by default)
+$db   = "security";
 
-try {
-    $conn = new PDO("pgsql:host=$host;port=$port;dbname=$db", $user, $pass);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // echo "Connected successfully"; // optional test
-} catch(PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn = new mysqli($host, $user, $pass, $db);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+?>
